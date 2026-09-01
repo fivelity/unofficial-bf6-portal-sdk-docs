@@ -13,7 +13,7 @@ unzip -q PortalSDK.zip -d tmp
 mkdir -p src
 
 # Move the required files to src folder
-mv tmp/code/mod/index.d.ts src/sdk.d.ts
+mv tmp/code/types/mod/index.d.ts src/sdk.d.ts
 mv tmp/code/modlib/index.ts src/modlib.ts
 
 # Add triple-slash reference directive to modlib.ts if not already present
