@@ -5,4 +5,5 @@ kind: guide
 
 # Source Files
 
-- [index.ts](/source/index-ts/)
+- [modlib.ts](/source/modlib-ts/)
+- [sdk.d.ts](/source/sdk-d-ts/)
