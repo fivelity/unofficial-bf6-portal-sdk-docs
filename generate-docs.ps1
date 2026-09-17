@@ -118,21 +118,15 @@ try {
     }
 
     # --- Generate documentation using typedoc ----------------------------------------
-    Write-Step 'Generating documentation with TypeDoc'
+    Write-Step 'Generating documentation with TypeDoc and clean-jsdoc-theme'
 
-    $typedocArgs = @(
-        '--name', 'Unofficial BF6 Portal SDK Docs'
-        '--readme', $ReadmePath
-        '--entryPointStrategy', 'Expand'
-        $SrcDir
-    )
-
-    # Prefers pnpm (per project convention); falls back to npx if pnpm isn't available.
+    # Keep the doc generation settings in typedoc.json so the theme plugin and
+    # output format stay in sync with the repo configuration.
     if (Get-Command pnpm -ErrorAction SilentlyContinue) {
-        & pnpm dlx typedoc@latest @typedocArgs
+        & pnpm exec typedoc --options typedoc.json
     }
     elseif (Get-Command npx -ErrorAction SilentlyContinue) {
-        & npx typedoc @typedocArgs
+        & npx typedoc --options typedoc.json
     }
     else {
         throw 'Neither pnpm nor npx was found on PATH. Install Node.js/pnpm to run typedoc.'
