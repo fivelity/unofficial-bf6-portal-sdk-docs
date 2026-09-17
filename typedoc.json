@@ -1,0 +1,14 @@
+{
+  "plugin": [
+    "@clean-jsdoc-theme/typedoc"
+  ],
+  "outputs": [
+    {
+      "name": "clean-jsdoc-theme",
+      "path": "docs"
+    }
+  ],
+  "cleanJsdocTheme": {
+    "siteName": "Unofficial BF6 Portal SDK Docs"
+  }
+}

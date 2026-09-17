@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@clean-jsdoc-theme/typedoc": "^5.2.0",
+    "typedoc": "^0.28.20"
+  }
+}
