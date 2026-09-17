@@ -80,7 +80,7 @@ try {
     # --- Create src directory if it doesn't exist ----------------------------------
     New-Item -ItemType Directory -Path $SrcDir -Force | Out-Null
 
-    # --- Move the required files to src folder --------------------------------------
+    # --- Copy the required files to src folder ---------------------------------------
     $sdkSource = Join-Path $TempDir 'code/types/mod/index.d.ts'
     $modlibSource = Join-Path $TempDir 'code/modlib/index.ts'
 
@@ -94,8 +94,8 @@ try {
         throw "Expected modlib source not found: $modlibSource"
     }
 
-    Move-Item -LiteralPath $sdkSource -Destination $sdkDest -Force
-    Move-Item -LiteralPath $modlibSource -Destination $modlibDest -Force
+    Copy-Item -LiteralPath $sdkSource -Destination $sdkDest -Force
+    Copy-Item -LiteralPath $modlibSource -Destination $modlibDest -Force
 
     # --- Prepend triple-slash reference directive to modlib.ts (if not already present) ---
     $referenceDirective = '/// <reference path="./sdk.d.ts" />'
@@ -127,15 +127,12 @@ try {
         $SrcDir
     )
 
-    # Prefers pnpm (per project convention); falls back to npx if pnpm isn't available.
-    if (Get-Command pnpm -ErrorAction SilentlyContinue) {
-        & pnpm dlx typedoc@latest @typedocArgs
-    }
-    elseif (Get-Command npx -ErrorAction SilentlyContinue) {
-        & npx typedoc @typedocArgs
+    # Use the project's installed TypeDoc so plugins from package.json resolve correctly.
+    if (Get-Command npx -ErrorAction SilentlyContinue) {
+        & npx --no-install typedoc @typedocArgs
     }
     else {
-        throw 'Neither pnpm nor npx was found on PATH. Install Node.js/pnpm to run typedoc.'
+        throw 'npx was not found on PATH. Install Node.js and run npm install before generating docs.'
     }
 
     if ($LASTEXITCODE -ne 0) {

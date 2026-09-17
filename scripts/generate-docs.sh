@@ -23,4 +23,4 @@ sed -i '1s/^/\/\/\/ <reference path=".\/sdk.d.ts" \/>\n\n/' src/modlib.ts
 rm -rf tmp
 
 # Generate documentation using typedoc
-npx typedoc --name "Unofficial BF6 Portal SDK Docs" --readme README.md --entryPointStrategy Expand src
+npx typedoc --name "BF6 Portal SDK 1.4.3.0" --readme README.md --entryPointStrategy Expand src

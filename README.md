@@ -147,19 +147,3 @@ Here are some of the most commonly used game logic objects:
 2.  **Assign `ObjId`s:** Assign a unique `ObjId` to each game logic object that you want to access from your script.
 3.  **Write TypeScript Code:** Write your TypeScript code to implement your game logic. Use the `mod.Get...` functions to get references to the objects in your scene.
 4.  **Compile and Run:** Export your project to Portal and run the game.
-
-## 💖 Support Me
-Hi! I’m krazyjakee 🎮, creator and maintain­er of the *NodotProject* - a suite of open‑source Godot tools (e.g. Nodot, Gedis, GedisQueue etc) that empower game developers to build faster and maintain cleaner code.
-
-I’m looking for sponsors to help sustain and grow the project: more dev time, better docs, more features, and deeper community support. Your support means more stable, polished tools used by indie makers and studios alike.
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/krazyjakee)
-
-Every contribution helps maintain and improve this project. And encourage me to make more projects like this!
-
-*This is optional support. The tool remains free and open-source regardless.*
-
----
-
-**Created with ❤️ for Godot Developers**  
-For contributions, please open PRs on GitHub
