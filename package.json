@@ -2,5 +2,8 @@
   "devDependencies": {
     "@clean-jsdoc-theme/typedoc": "^5.2.0",
     "typedoc": "^0.28.20"
+  },
+  "scripts": {
+    "serve": "npx http-server docs -p 3000 -c-1"
   }
 }

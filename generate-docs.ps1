@@ -36,6 +36,31 @@ function Write-Step {
     Write-Host "==> $Message" -ForegroundColor Cyan
 }
 
+function Convert-GeneratedDocsToRelativeLinks {
+    param([string]$OutputPath)
+
+    $docsRoot = (Resolve-Path -LiteralPath $OutputPath).Path
+    $rootUrlPattern = '(["''])/([^"''<>]+)'
+
+    Get-ChildItem -LiteralPath $docsRoot -Filter '*.html' -Recurse | ForEach-Object {
+        $relativeDirectory = [IO.Path]::GetRelativePath($docsRoot, $_.DirectoryName)
+        if ($relativeDirectory -eq '.') {
+            $prefix = './'
+        }
+        else {
+            $depth = ($relativeDirectory -split '[\\/]').Count
+            $prefix = '../' * $depth
+        }
+
+        $html = Get-Content -LiteralPath $_.FullName -Raw
+        $html = [regex]::Replace($html, $rootUrlPattern, {
+            param($match)
+            $match.Groups[1].Value + $prefix + $match.Groups[2].Value
+        })
+        Set-Content -LiteralPath $_.FullName -Value $html -NoNewline -Encoding utf8
+    }
+}
+
 try {
     # --- Remove old docs (always) ---------------------------------------------------
     if (Test-Path -LiteralPath $DocsDir) {
@@ -138,6 +163,9 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "typedoc exited with code $LASTEXITCODE"
     }
+
+    Write-Step 'Making generated links portable for local and hosted viewing'
+    Convert-GeneratedDocsToRelativeLinks -OutputPath $DocsDir
 
     Write-Step 'Done.'
 }
