@@ -121,7 +121,7 @@ try {
     Write-Step 'Generating documentation with TypeDoc'
 
     $typedocArgs = @(
-        '--name', 'Unofficial BF6 Portal SDK Docs'
+        '--name', 'BF6 Portal SDK Docs'
         '--readme', $ReadmePath
         '--entryPointStrategy', 'Expand'
         $SrcDir
