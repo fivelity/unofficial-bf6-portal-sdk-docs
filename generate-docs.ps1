@@ -47,40 +47,27 @@ try {
 
     # --- Extraction checkpoint -------------------------------------------------------
     $tempExists = Test-Path -LiteralPath $TempDir
+    $archiveExists = Test-Path -LiteralPath $ZipPath
 
-    $doExtract = $true
-    if ($SkipExtraction) {
-        if (-not $tempExists) {
-            throw "-SkipExtraction was specified but '$TempDir' does not exist."
-        }
-        $doExtract = $false
-        Write-Step "Skipping extraction (using existing '$TempDir')"
-    }
-    elseif ($tempExists -and -not $ForceExtraction) {
-        $choice = Read-Host "'$TempDir' already exists from a previous run. Re-extract ${ZipPath}? (y/N)"
-        if ($choice -notmatch '^(y|yes)$') {
-            $doExtract = $false
-            Write-Step "Skipping extraction (using existing '$TempDir')"
-        }
-    }
-
-    if ($doExtract) {
+    if ($ForceExtraction -or (-not $SkipExtraction -and -not $tempExists -and $archiveExists)) {
         Write-Step "Extracting $ZipPath"
-
-        if (-not (Test-Path -LiteralPath $ZipPath)) {
-            throw "Zip file not found: $ZipPath"
-        }
 
         if ($tempExists) {
             Remove-Item -LiteralPath $TempDir -Recurse -Force
         }
         Expand-Archive -LiteralPath $ZipPath -DestinationPath $TempDir -Force
     }
+    elseif ($SkipExtraction -or $tempExists) {
+        Write-Step "Using existing '$TempDir' source tree"
+    }
+    else {
+        throw "No SDK source tree found at '$TempDir' and no archive found at '$ZipPath'."
+    }
 
     # --- Create src directory if it doesn't exist ----------------------------------
     New-Item -ItemType Directory -Path $SrcDir -Force | Out-Null
 
-    # --- Move the required files to src folder --------------------------------------
+    # --- Copy the required files to src folder --------------------------------------
     $sdkSource = Join-Path $TempDir 'code/types/mod/index.d.ts'
     $modlibSource = Join-Path $TempDir 'code/modlib/index.ts'
 
@@ -94,8 +81,8 @@ try {
         throw "Expected modlib source not found: $modlibSource"
     }
 
-    Move-Item -LiteralPath $sdkSource -Destination $sdkDest -Force
-    Move-Item -LiteralPath $modlibSource -Destination $modlibDest -Force
+    Copy-Item -LiteralPath $sdkSource -Destination $sdkDest -Force
+    Copy-Item -LiteralPath $modlibSource -Destination $modlibDest -Force
 
     # --- Prepend triple-slash reference directive to modlib.ts (if not already present) ---
     $referenceDirective = '/// <reference path="./sdk.d.ts" />'
