@@ -1,4 +1,3 @@
 *.zip
 tmp/
 src/
-node_modules/

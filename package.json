@@ -1,7 +1,7 @@
 {
-  "name": "fivelity-urban-lamp",
+  "name": "bf6-portal-sdk-docs",
   "version": "1.0.0",
-  "description": "Unofficial BF6 Portal SDK documentation generated with TypeDoc and the clean-jsdoc theme.",
+  "description": "BF6 Portal SDK documentation",
   "main": "index.js",
   "directories": {
     "doc": "docs"
@@ -14,7 +14,8 @@
   "keywords": [
     "bf6",
     "godot",
-    "typedoc",
+    "portal",
+    "sdk",
     "documentation"
   ],
   "author": "",
