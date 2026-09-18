@@ -1,4 +1,4 @@
-﻿/// <reference path="./sdk.d.ts" />
+/// <reference path="./sdk.d.ts" />
 
 // export * from './store';
 

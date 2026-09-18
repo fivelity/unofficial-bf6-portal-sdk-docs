@@ -2,6 +2,7 @@
   "$schema": "https://typedoc.org/schema.json",
   "name": "BF6 Portal SDK Docs",
   "readme": "README.md",
+
   "entryPointStrategy": "expand",
   "entryPoints": [
     "src"
@@ -16,7 +17,7 @@
     }
   ],
   "cleanJsdocTheme": {
-    "siteName": "Unofficial BF6 Portal SDK Docs",
+    "siteName": "BF6 Portal SDK Docs",
     "basePath": "/unofficial-bf6-portal-sdk-docs",
     "customJs": "(function(){try{const root=document.documentElement;const saved=localStorage.getItem('theme');if(!saved){localStorage.setItem('theme','dark');}if(localStorage.getItem('theme')==='dark'){root.dataset.theme='dark';}else{root.dataset.theme='light';}}catch(_){}}());"
   }
