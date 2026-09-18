@@ -3,7 +3,7 @@
   "name": "BF6 Portal SDK Docs",
   "readme": "README.md",
 
-  "entryPointStrategy": "expand",
+  "entryPointStrategy": "Resolve",
   "entryPoints": [
     "src"
   ],

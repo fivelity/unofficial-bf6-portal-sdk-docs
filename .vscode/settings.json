@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^powershell -Command \"Get-ChildItem docs\\\\module\\\\sdk\\\\mod -Directory \\| Measure-Object -Count\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

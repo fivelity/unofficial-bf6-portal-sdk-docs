@@ -121,10 +121,8 @@ try {
     Write-Step 'Generating documentation with TypeDoc'
 
     $typedocArgs = @(
-        '--name', 'BF6 Portal SDK Docs'
-        '--readme', $ReadmePath
-        '--entryPointStrategy', 'Expand'
-        $SrcDir
+        '--config', 'typedoc.json'
+        '--entryPoints', $SrcDir
     )
 
     if (Get-Command npx -ErrorAction SilentlyContinue) {
