@@ -56,7 +56,8 @@ try {
     }
     elseif ($tempExists -and -not $ForceExtraction) {
         $choice = Read-Host "'$TempDir' already exists from a previous run. Re-extract ${ZipPath}? (y/N)"
-        if ($choice -notmatch '^(y|yes)$') {
+        if ($choice -notmatch '^(?i:y|yes)$')
+        {
             $doExtract = $false
             Write-Step "Skipping extraction (using existing '$TempDir')"
         }
@@ -100,9 +101,9 @@ try {
     $referenceDirective = '/// <reference path="./sdk.d.ts" />'
     $content = Get-Content -LiteralPath $modlibDest -Raw
 
-    if ($content -notmatch [regex]::Escape($referenceDirective)) {
+    if ($content -notmatch '///\s*<reference\s+path="\.\/sdk\.d\.ts"\s*\/>') {
         $newContent = "$referenceDirective`n`n$content"
-        Set-Content -LiteralPath $modlibDest -Value $newContent -NoNewline -Encoding utf8
+        Set-Content -LiteralPath $modlibDest -Value $newContent -Encoding utf8
     }
     else {
         Write-Verbose 'Reference directive already present in modlib.ts; skipping insert.'
@@ -117,19 +118,23 @@ try {
     }
 
     # --- Generate documentation using typedoc ----------------------------------------
-    Write-Step 'Generating documentation with TypeDoc and clean-jsdoc-theme'
+    Write-Step 'Generating documentation with TypeDoc'
 
-    # Keep the doc generation settings in typedoc.json so the theme plugin and
-    # output format stay in sync with the repo configuration.
-    # Prefers npm (per project convention); falls back to npx if npm isn't available.
-    if (Get-Command npm -ErrorAction SilentlyContinue) {
-        & npm run docs
+    $typedocArgs = @(
+        '--name', 'BF6 Portal SDK Docs'
+        '--readme', $ReadmePath
+        '--entryPointStrategy', 'Expand'
+        $SrcDir
+    )
+
+    if (Get-Command npx -ErrorAction SilentlyContinue) {
+        & npx typedoc @typedocArgs
     }
-    elseif (Get-Command npx -ErrorAction SilentlyContinue) {
-        & npx typedoc --options typedoc.json
+    elseif (Get-Command typedoc -ErrorAction SilentlyContinue) {
+        & typedoc @typedocArgs
     }
     else {
-        throw 'Neither npm nor npx was found on PATH. Install Node.js/npm to run typedoc.'
+        throw 'typedoc or npx not found on PATH.'
     }
 
     if ($LASTEXITCODE -ne 0) {
