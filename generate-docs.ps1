@@ -1,4 +1,3 @@
-#Requires -Version 7.0
 <#
 .SYNOPSIS
     Extracts PortalSDK.zip, stages source files, and generates TypeDoc documentation.
@@ -41,9 +40,8 @@ try {
     if (Test-Path -LiteralPath $DocsDir) {
         Remove-Item -LiteralPath $DocsDir -Recurse -Force
     }
-    if (Test-Path -LiteralPath $SrcDir) {
-        Remove-Item -LiteralPath $SrcDir -Recurse -Force
-    }
+    # NOTE: Do NOT remove $SrcDir here. It is recreated fresh below (line 72) before
+    # files are moved into it. Removing it here causes an empty src/ if the move fails.
 
     # --- Extraction checkpoint -------------------------------------------------------
     $tempExists = Test-Path -LiteralPath $TempDir
@@ -80,7 +78,7 @@ try {
     # --- Create src directory if it doesn't exist ----------------------------------
     New-Item -ItemType Directory -Path $SrcDir -Force | Out-Null
 
-    # --- Move the required files to src folder --------------------------------------
+    # --- Copy the required files to src folder --------------------------------------
     $sdkSource = Join-Path $TempDir 'code/types/mod/index.d.ts'
     $modlibSource = Join-Path $TempDir 'code/modlib/index.ts'
 
@@ -94,8 +92,9 @@ try {
         throw "Expected modlib source not found: $modlibSource"
     }
 
-    Move-Item -LiteralPath $sdkSource -Destination $sdkDest -Force
-    Move-Item -LiteralPath $modlibSource -Destination $modlibDest -Force
+    Copy-Item -LiteralPath $sdkSource -Destination $sdkDest -Force
+    Copy-Item -LiteralPath $modlibSource -Destination $modlibDest -Force
+
 
     # --- Prepend triple-slash reference directive to modlib.ts (if not already present) ---
     $referenceDirective = '/// <reference path="./sdk.d.ts" />'
@@ -118,24 +117,19 @@ try {
     }
 
     # --- Generate documentation using typedoc ----------------------------------------
-    Write-Step 'Generating documentation with TypeDoc'
+    Write-Step 'Generating documentation with TypeDoc and clean-jsdoc-theme'
 
-    $typedocArgs = @(
-        '--name', 'BF6 Portal SDK Docs'
-        '--readme', $ReadmePath
-        '--entryPointStrategy', 'Expand'
-        $SrcDir
-    )
-
-    # Prefers pnpm (per project convention); falls back to npx if pnpm isn't available.
-    if (Get-Command pnpm -ErrorAction SilentlyContinue) {
-        & pnpm dlx typedoc@latest @typedocArgs
+    # Keep the doc generation settings in typedoc.json so the theme plugin and
+    # output format stay in sync with the repo configuration.
+    # Prefers npm (per project convention); falls back to npx if npm isn't available.
+    if (Get-Command npm -ErrorAction SilentlyContinue) {
+        & npm run docs
     }
     elseif (Get-Command npx -ErrorAction SilentlyContinue) {
-        & npx typedoc @typedocArgs
+        & npx typedoc --options typedoc.json
     }
     else {
-        throw 'Neither pnpm nor npx was found on PATH. Install Node.js/pnpm to run typedoc.'
+        throw 'Neither npm nor npx was found on PATH. Install Node.js/npm to run typedoc.'
     }
 
     if ($LASTEXITCODE -ne 0) {

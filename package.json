@@ -1,0 +1,27 @@
+{
+  "name": "bf6-portal-sdk-docs",
+  "version": "1.0.0",
+  "description": "BF6 Portal SDK documentation",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "docs": "typedoc --options typedoc.json",
+    "docs:generate": "pwsh ./generate-docs.ps1",
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "keywords": [
+    "bf6",
+    "godot",
+    "portal",
+    "documentation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@clean-jsdoc-theme/typedoc": "^5.2.0",
+    "typedoc": "^0.28.20"
+  }
+}
