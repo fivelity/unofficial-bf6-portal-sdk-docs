@@ -1,28 +1,24 @@
 #!/bin/bash
 
-echo "Preparing SDK sources"
+set -euo pipefail
 
-# Remove old docs and staged code
+echo "Preparing SDK sources from src"
+
+# src contains the SDK source of truth; only remove generated output.
 rm -rf docs
-rm -rf src
 
-# Reuse an existing extracted SDK tree, or extract the archive when available.
-if [ ! -d tmp/code/types/mod ] || [ ! -f tmp/code/modlib/index.ts ]; then
-  unzip -q PortalSDK.zip -d tmp
+# Keep a compatibility fallback for archive-only checkouts.
+if [ ! -f src/sdk.d.ts ] || [ ! -f src/modlib.ts ]; then
+  if [ ! -d tmp/code/types/mod ] || [ ! -f tmp/code/modlib/index.ts ]; then
+    unzip -q PortalSDK.zip -d tmp
+  fi
+  mkdir -p src
+  cp tmp/code/types/mod/index.d.ts src/sdk.d.ts
+  cp tmp/code/modlib/index.ts src/modlib.ts
 fi
 
-# Create src directory if it doesn't exist
-mkdir -p src
+if ! grep -qF '/// <reference path="./sdk.d.ts" />' src/modlib.ts; then
+  sed -i '1s/^/\/\/\/ <reference path=".\/sdk.d.ts" \/>\n\n/' src/modlib.ts
+fi
 
-# Move the required files to src folder
-cp tmp/code/types/mod/index.d.ts src/sdk.d.ts
-cp tmp/code/modlib/index.ts src/modlib.ts
-
-# Add triple-slash reference directive to modlib.ts if not already present
-sed -i '1s/^/\/\/\/ <reference path=".\/sdk.d.ts" \/>\n\n/' src/modlib.ts
-
-# Clean up temporary directory
-rm -rf tmp
-
-# Generate documentation using typedoc
-npx typedoc --name "Unofficial BF6 Portal SDK Docs" --readme README.md --entryPointStrategy Expand src
+npx typedoc --options typedoc.json

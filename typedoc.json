@@ -4,7 +4,8 @@
   "readme": "README.md",
   "entryPointStrategy": "Expand",
   "entryPoints": [
-    "src"
+    "src/modlib.ts",
+    "src/sdk.d.ts"
   ],
   "plugin": [
     "@clean-jsdoc-theme/typedoc"

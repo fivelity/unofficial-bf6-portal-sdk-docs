@@ -1,12 +1,12 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Extracts PortalSDK.zip, stages source files, and generates TypeDoc documentation.
+    Generates TypeDoc documentation from the SDK files in ./src.
 
 .DESCRIPTION
-    PowerShell 7 port of generate-docs.sh. Extracts PortalSDK.zip, moves the
-    required SDK/modlib files into ./src, patches modlib.ts with a triple-slash
-    reference directive, and runs TypeDoc to build documentation.
+    src/modlib.ts and src/sdk.d.ts are the SDK source of truth. If either file
+    is missing, PortalSDK.zip or an existing ./tmp extraction is used as a
+    compatibility fallback.
 #>
 
 [CmdletBinding()]
@@ -15,16 +15,8 @@ param(
     [string]$TempDir = 'tmp',
     [string]$SrcDir = 'src',
     [string]$DocsDir = 'docs',
-    [string]$ReadmePath = 'README.md',
-
-    # Skip extraction entirely and reuse whatever is already in $TempDir.
     [switch]$SkipExtraction,
-
-    # Force re-extraction even if $TempDir already exists, no prompt.
     [switch]$ForceExtraction,
-
-    # Delete $TempDir after the run. Off by default so a slow extraction can be
-    # reused via -SkipExtraction on a subsequent run.
     [switch]$CleanTemp
 )
 
@@ -37,78 +29,50 @@ function Write-Step {
 }
 
 try {
-    # --- Remove old docs (always) ---------------------------------------------------
     if (Test-Path -LiteralPath $DocsDir) {
         Remove-Item -LiteralPath $DocsDir -Recurse -Force
     }
-    if (Test-Path -LiteralPath $SrcDir) {
-        Remove-Item -LiteralPath $SrcDir -Recurse -Force
-    }
-
-    # --- Extraction checkpoint -------------------------------------------------------
-    $tempExists = Test-Path -LiteralPath $TempDir
-    $archiveExists = Test-Path -LiteralPath $ZipPath
-
-    if ($ForceExtraction -or (-not $SkipExtraction -and -not $tempExists -and $archiveExists)) {
-        Write-Step "Extracting $ZipPath"
-
-        if ($tempExists) {
-            Remove-Item -LiteralPath $TempDir -Recurse -Force
-        }
-        Expand-Archive -LiteralPath $ZipPath -DestinationPath $TempDir -Force
-    }
-    elseif ($SkipExtraction -or $tempExists) {
-        Write-Step "Using existing '$TempDir' source tree"
-    }
-    else {
-        throw "No SDK source tree found at '$TempDir' and no archive found at '$ZipPath'."
-    }
-
-    # --- Create src directory if it doesn't exist ----------------------------------
-    New-Item -ItemType Directory -Path $SrcDir -Force | Out-Null
-
-    # --- Copy the required files to src folder --------------------------------------
-    $sdkSource = Join-Path $TempDir 'code/types/mod/index.d.ts'
-    $modlibSource = Join-Path $TempDir 'code/modlib/index.ts'
 
     $sdkDest = Join-Path $SrcDir 'sdk.d.ts'
     $modlibDest = Join-Path $SrcDir 'modlib.ts'
 
-    if (-not (Test-Path -LiteralPath $sdkSource)) {
-        throw "Expected SDK typings not found: $sdkSource"
+    if (-not (Test-Path -LiteralPath $sdkDest) -or -not (Test-Path -LiteralPath $modlibDest)) {
+        $tempExists = Test-Path -LiteralPath $TempDir
+        $archiveExists = Test-Path -LiteralPath $ZipPath
+
+        if ($ForceExtraction -or (-not $SkipExtraction -and -not $tempExists -and $archiveExists)) {
+            Write-Step "Extracting $ZipPath"
+            if ($tempExists) {
+                Remove-Item -LiteralPath $TempDir -Recurse -Force
+            }
+            Expand-Archive -LiteralPath $ZipPath -DestinationPath $TempDir -Force
+        }
+
+        $sdkSource = Join-Path $TempDir 'code/types/mod/index.d.ts'
+        $modlibSource = Join-Path $TempDir 'code/modlib/index.ts'
+        if (-not (Test-Path -LiteralPath $sdkSource) -or -not (Test-Path -LiteralPath $modlibSource)) {
+            throw "SDK source files are required at '$sdkDest' and '$modlibDest'."
+        }
+
+        New-Item -ItemType Directory -Path $SrcDir -Force | Out-Null
+        Copy-Item -LiteralPath $sdkSource -Destination $sdkDest -Force
+        Copy-Item -LiteralPath $modlibSource -Destination $modlibDest -Force
     }
-    if (-not (Test-Path -LiteralPath $modlibSource)) {
-        throw "Expected modlib source not found: $modlibSource"
+    else {
+        Write-Step "Using SDK sources from '$SrcDir'"
     }
 
-    Copy-Item -LiteralPath $sdkSource -Destination $sdkDest -Force
-    Copy-Item -LiteralPath $modlibSource -Destination $modlibDest -Force
-
-    # --- Prepend triple-slash reference directive to modlib.ts (if not already present) ---
     $referenceDirective = '/// <reference path="./sdk.d.ts" />'
     $content = Get-Content -LiteralPath $modlibDest -Raw
-
     if ($content -notmatch [regex]::Escape($referenceDirective)) {
-        $newContent = "$referenceDirective`n`n$content"
-        Set-Content -LiteralPath $modlibDest -Value $newContent -NoNewline -Encoding utf8
-    }
-    else {
-        Write-Verbose 'Reference directive already present in modlib.ts; skipping insert.'
+        Set-Content -LiteralPath $modlibDest -Value "$referenceDirective`n`n$content" -NoNewline -Encoding utf8
     }
 
-    # --- Clean up temporary directory (opt-in; kept by default for reuse) ------------
-    if ($CleanTemp) {
+    if ($CleanTemp -and (Test-Path -LiteralPath $TempDir)) {
         Remove-Item -LiteralPath $TempDir -Recurse -Force
     }
-    else {
-        Write-Verbose "Leaving '$TempDir' in place. Use -SkipExtraction next run to reuse it, or -CleanTemp to delete it now."
-    }
 
-    # --- Generate documentation using typedoc ----------------------------------------
     Write-Step 'Generating documentation with TypeDoc and clean-jsdoc-theme'
-
-    # Keep the doc generation settings in typedoc.json so the theme plugin and
-    # output format stay in sync with the repo configuration.
     if (Get-Command pnpm -ErrorAction SilentlyContinue) {
         & pnpm exec typedoc --options typedoc.json
     }

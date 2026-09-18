@@ -1,4 +1,4 @@
 *.zip
 tmp/
-src/
+src/index.ts
 node_modules/
