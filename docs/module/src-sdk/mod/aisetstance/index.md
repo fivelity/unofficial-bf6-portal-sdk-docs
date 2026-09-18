@@ -1,0 +1,20 @@
+---
+title: AISetStance
+kind: function
+longname: module:src/sdk.mod.AISetStance
+---
+
+# AISetStance
+
+<Signature code="AISetStance(player: Player, stance: Stance): void" />
+
+<SourceLink href="/source/sdk-d-ts/#L32811" label="sdk.d.ts:32811" />
+
+**Parameters**
+
+- `player` (Player)
+- `stance` ([Stance](/module/src-sdk/mod/stance))
+
+**Returns**
+
+- `void`
